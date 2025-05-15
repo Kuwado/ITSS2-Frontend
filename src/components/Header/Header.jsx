@@ -6,7 +6,7 @@ const Header = () => {
   return (
     <div className="header">
       <div className="header-left">
-        <img src={logo} alt="logo" />
+        <img className="logo" src={logo} alt="logo" />
         <NavLink
           to="/"
           className={({ isActive }) =>
@@ -22,6 +22,14 @@ const Header = () => {
           }
         >
           Tìm việc
+        </NavLink>
+        <NavLink
+          to="/profile"
+          className={({ isActive }) =>
+            isActive ? "header-item active" : "header-item"
+          }
+        >
+          Thông tin cá nhân
         </NavLink>
       </div>
       <div className="header-right"></div>
