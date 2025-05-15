@@ -40,37 +40,28 @@ const fakeJob = {
 };
 
 
-const JobDetailPage = () => {
+const JobDetail = () => {
   const { id } = useParams();
-  console.log("id from useParams:", id);
   const [job, setJob] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        setLoading(true);
         const response = await axios.get(
           `http://localhost:8080/api/v1/jobs/detail/${id}`
         );
-        console.log(response.data);
+        console.log("Dữ liệu trả về:", response.data);
         setJob(response.data);
-        setLoading(false);
       } catch (err) {
-        console.error("Error fetching job:", err);
-        setError("Không thể tải dữ liệu công việc");
-        setLoading(false);
+        console.error("Lỗi khi gọi API:", err);
       }
     };
-
-    if (id) {
-      fetchJob();
-    }
+    fetchJob();
   }, [id]);
 
-
-
+  if (!job) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="home-page">
       <Header />
@@ -79,7 +70,7 @@ const JobDetailPage = () => {
           <div className="newdiv">
             <h1 className="job-title">{job.title}</h1>
             <div className="badges">
-              <span className="badge type">{job.type}</span>
+              <span className="badge type">{job.jobType}</span>
               <span className="badge category">{job.category}</span>
             </div>
           </div>
@@ -99,10 +90,10 @@ const JobDetailPage = () => {
                   {job.experienceRequired || "Không yêu cầu kinh nghiệm"}
                 </li>
                 <li>
-                  <PeopleIcon /> {job.quantity} người
+                  <PeopleIcon /> {job.numberOfPeople}
                 </li>
                 <li>
-                  <AccessTimeIcon /> {job.schedule}
+                  <AccessTimeIcon /> {job.workingTime}
                 </li>
                 <li>
                   <CalendarTodayIcon /> {job.startDate} – {job.endDate}
@@ -117,18 +108,18 @@ const JobDetailPage = () => {
                 </div>
                 <div className="company-info">
                   <div className="company-name">{job.company.name}</div>
-                  <div className="company-location">{job.company.location}</div>
+                  <div className="company-location">{job.company.address}</div>
                 </div>
               </div>
               <div className="info">
                 <li>
-                  <PeopleIcon /> {job.company.people} người
+                  <PeopleIcon /> {job.company.employeeCount}
                 </li>
                 <li>
-                  <MonetizationOnIcon /> {job.company.Job}
+                  <MonetizationOnIcon /> {job.company.industry}
                 </li>
                 <li>
-                  <LocationOnIcon /> {job.company.addresses}
+                  <LocationOnIcon /> {job.company.location}
                 </li>
               </div>
             </div>
@@ -137,8 +128,8 @@ const JobDetailPage = () => {
           <h2>Mô tả chi tiết công việc</h2>
           <div className="job-description">
             <ul>
-              {job.description?.map((desc, index) => (
-                <li key={index}>{desc}</li>
+              {job.description.split("\n").map((line, index) => (
+                <p key={index}>{line}</p>
               ))}
             </ul>
           </div>
@@ -148,4 +139,4 @@ const JobDetailPage = () => {
   );
 };
 
-export default JobDetailPage;
+export default JobDetail;
