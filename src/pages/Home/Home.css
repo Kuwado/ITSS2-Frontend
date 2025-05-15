@@ -103,3 +103,15 @@
   height: 2px;
   background-color: rgba(172, 178, 185, 0.45);
 }
+
+.company-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  justify-items: center;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.company-list img {
+  width: 120px;
+}

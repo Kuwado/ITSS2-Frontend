@@ -1,12 +1,19 @@
 import Header from "../../components/Header";
 import "./Home.css";
 import banner from "../../assets/banner.png";
+import fpt from "../../assets/fpt.png";
+import viettel from "../../assets/viettel.png";
+import sun from "../../assets/sun.png";
+import vnpt from "../../assets/vnpt.png";
+import ibm from "../../assets/ibm.png";
+
 import SearchBar from "../../components/SearchBar/SearchBar";
 import { useState } from "react";
 import Card from "../../components/Card/Card";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { useLocation, useNavigate } from "react-router-dom";
+import Footer from "../../components/Footer/Footer";
 
 const responsive = {
   desktop: {
@@ -123,9 +130,17 @@ const Home = () => {
             <div className="favorite-title">Top các công ty nổi tiếng</div>
             <div className="line"></div>
           </div>
-          <div className="company-list"></div>
+
+          <div className="company-list">
+            <img src={fpt} alt="company-logo" />
+            <img src={viettel} alt="company-logo" />
+            <img src={sun} alt="company-logo" />
+            <img src={vnpt} alt="company-logo" />
+            <img src={ibm} alt="company-logo" />
+          </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
