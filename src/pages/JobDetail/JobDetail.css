@@ -22,6 +22,7 @@
   font-size: 30px;
   font-weight: bold;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .badges {
