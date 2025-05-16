@@ -7,9 +7,11 @@ import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
 import PeopleIcon from "@mui/icons-material/People";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
 import companyLogo from "../../assets/company-logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import PushPinIcon from "@mui/icons-material/PushPin";
 import "./JobDetail.css";
 import Header from "../../components/Header";
 
@@ -44,7 +46,7 @@ const JobDetail = () => {
           <div className="newdiv">
             <h1 onClick={() => navigate(-1)} className="job-title">
               <FontAwesomeIcon icon={faChevronLeft} />
-              {job.title}
+              <span style={{ marginLeft: "10px" }}>{job.title}</span>
             </h1>
             <div className="badges">
               <span className="badge type">{job.jobType}</span>
@@ -80,8 +82,18 @@ const JobDetail = () => {
 
             <div className="right-column">
               <div className="company">
+                <PushPinIcon
+                  style={{
+                    color: "red",
+                    position: "absolute",
+                    top: 8,
+                    left: 8,
+                    transform: "rotate(40deg)",
+                    zIndex: 2,
+                  }}
+                />
                 <div className="avatar">
-                  <img src={job.avatar ?? companyLogo} alt="company-logo" />
+                  <img src={job.company.Logo ?? companyLogo} alt="company-logo" />
                 </div>
                 <div className="company-info">
                   <div className="company-name">{job.company.name}</div>
@@ -93,7 +105,7 @@ const JobDetail = () => {
                   <PeopleIcon /> {job.company.employeeCount}
                 </li>
                 <li>
-                  <MonetizationOnIcon /> {job.company.industry}
+                  <Inventory2Icon /> {job.company.industry}
                 </li>
                 <li>
                   <LocationOnIcon /> {job.company.location}

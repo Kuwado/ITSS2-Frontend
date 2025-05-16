@@ -61,6 +61,7 @@
 
 .left-column,
 .right-column {
+  position: relative;
   flex: 1;
   min-width: 0;
   padding: 16px;
@@ -86,6 +87,8 @@
 }
 
 .company{
+  margin-left: 80px;
+  margin-top: 30px;
   margin-bottom: 20px;
 }
 
