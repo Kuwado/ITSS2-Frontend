@@ -9,6 +9,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import companyLogo from "../../assets/company-logo.png";
+import PushPin from "../../assets/pushpin.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import PushPinIcon from "@mui/icons-material/PushPin";
@@ -38,6 +39,18 @@ const JobDetail = () => {
   if (!job) {
     return <div>Loading...</div>;
   }
+
+  const formatDateTime = (dateStr) => {
+    return new Date(dateStr).toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
+
   return (
     <div className="home-page">
       <Header />
@@ -75,25 +88,22 @@ const JobDetail = () => {
                   <AccessTimeIcon /> {job.workingTime}
                 </li>
                 <li>
-                  <CalendarTodayIcon /> {job.startDate} – {job.endDate}
+                  <CalendarTodayIcon /> {formatDateTime(job.startDate)} –{" "}
+                  {formatDateTime(job.endDate)}
                 </li>
               </ul>
             </div>
 
             <div className="right-column">
+              <div className="icon-PushPin">
+                <img src={PushPin} alt="company-logo" />
+              </div>
               <div className="company-v">
-                <PushPinIcon
-                  style={{
-                    color: "red",
-                    position: "absolute",
-                    top: 8,
-                    left: 8,
-                    transform: "rotate(40deg)",
-                    zIndex: 2,
-                  }}
-                />
                 <div className="avatar">
-                  <img src={job.company.Logo ?? companyLogo} alt="company-logo" />
+                  <img
+                    src={job.company.Logo ?? companyLogo}
+                    alt="company-logo"
+                  />
                 </div>
                 <div className="company-info">
                   <div className="company-name">{job.company.name}</div>

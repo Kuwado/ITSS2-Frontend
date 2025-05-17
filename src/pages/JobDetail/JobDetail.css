@@ -87,8 +87,10 @@
 }
 
 .company-v{
+  display: flex;
+  align-items: center;
+  gap: 15px;
   margin-left: 80px;
-  margin-top: 30px;
   margin-bottom: 20px;
 }
 
