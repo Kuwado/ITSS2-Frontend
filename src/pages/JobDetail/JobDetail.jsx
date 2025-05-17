@@ -52,7 +52,7 @@ const JobDetail = () => {
   };
 
   return (
-    <div className="home-page">
+    <div className="JobDetail-page">
       <Header />
       <div className="page-content">
         <div className="job-container">
