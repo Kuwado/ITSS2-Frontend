@@ -49,8 +49,8 @@ const JobDetail = () => {
               <span style={{ marginLeft: "10px" }}>{job.title}</span>
             </h1>
             <div className="badges">
-              <span className="badge type">{job.jobType}</span>
-              <span className="badge category">{job.category}</span>
+              <span className="badge type-v">{job.jobType}</span>
+              <span className="badge category-v">{job.category}</span>
             </div>
           </div>
 
@@ -81,7 +81,7 @@ const JobDetail = () => {
             </div>
 
             <div className="right-column">
-              <div className="company">
+              <div className="company-v">
                 <PushPinIcon
                   style={{
                     color: "red",
