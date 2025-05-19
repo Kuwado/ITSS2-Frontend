@@ -12,13 +12,13 @@ import companyLogo from "../../assets/company-logo.png";
 import PushPin from "../../assets/pushpin.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
-import PushPinIcon from "@mui/icons-material/PushPin";
 import "./JobDetail.css";
 import Header from "../../components/Header";
 
 const JobDetail = () => {
   const { id } = useParams();
   const [job, setJob] = useState(null);
+  const [showSchedule, setShowSchedule] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +39,11 @@ const JobDetail = () => {
   if (!job) {
     return <div>Loading...</div>;
   }
+
+  const formatPrice = (amount) => {
+    if (isNaN(amount)) return "0 đ";
+    return `${Number(amount).toLocaleString("vi-VN")}đ`;
+  };
 
   const formatDateTime = (dateStr) => {
     return new Date(dateStr).toLocaleString("vi-VN", {
@@ -75,7 +80,8 @@ const JobDetail = () => {
                   <LocationOnIcon /> {job.address}
                 </li>
                 <li>
-                  <MonetizationOnIcon /> {job.salary}/{job.salaryUnit}
+                  <MonetizationOnIcon /> {formatPrice(job.salary)}/
+                  {job.salaryUnit}
                 </li>
                 <li>
                   <WorkHistoryIcon />{" "}
@@ -84,9 +90,45 @@ const JobDetail = () => {
                 <li>
                   <PeopleIcon /> {job.numberOfPeople}
                 </li>
-                <li>
-                  <AccessTimeIcon /> {job.workingTime}
-                </li>
+                {job.jobType === "Part-Time" ? (
+                  <>
+                    <li
+                      onClick={() => setShowSchedule(!showSchedule)}
+                    >
+                      <AccessTimeIcon /> {job.workingTime}
+                      <span
+                        style={{
+                          fontStyle: "italic",
+                          textDecoration: "underline",
+                          color: "#007bff", // hoặc chọn màu khác phù hợp
+                          cursor: "pointer",
+                        }}
+                      >
+                        (Chi tiết)
+                      </span>
+                    </li>
+
+                    {showSchedule && job.workingSchedule?.length > 0 && (
+                      <ul style={{ marginTop: "8px", marginLeft: "20px" }}>
+                        {job.workingSchedule.map((item) => (
+                          <li key={item._id}>
+                            <AccessTimeIcon
+                              style={{
+                                verticalAlign: "middle",
+                              }}
+                            />
+                            <strong>{item.day}:</strong> {item.period}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  <li>
+                       {job.workingTime}
+                  </li>
+                )}
+
                 <li>
                   <CalendarTodayIcon /> {formatDateTime(job.startDate)} –{" "}
                   {formatDateTime(job.endDate)}
@@ -101,7 +143,7 @@ const JobDetail = () => {
               <div className="company-v">
                 <div className="avatar">
                   <img
-                    src={job.company.Logo ?? companyLogo}
+                    src={job.company.logo ?? companyLogo}
                     alt="company-logo"
                   />
                 </div>
