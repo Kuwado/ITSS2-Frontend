@@ -92,9 +92,7 @@ const JobDetail = () => {
                 </li>
                 {job.jobType === "Part-Time" ? (
                   <>
-                    <li
-                      onClick={() => setShowSchedule(!showSchedule)}
-                    >
+                    <li onClick={() => setShowSchedule(!showSchedule)}>
                       <AccessTimeIcon /> {job.workingTime}
                       <span
                         style={{
@@ -125,8 +123,7 @@ const JobDetail = () => {
                   </>
                 ) : (
                   <li>
-                       {job.workingTime}
-                  </li>
+                    <AccessTimeIcon /> {job.workingTime}</li>
                 )}
 
                 <li>
