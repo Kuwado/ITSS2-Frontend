@@ -1,48 +1,120 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Profile.css";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer/Footer";
 import viettel from "../../assets/viettel.png";
-import { Button, TextField } from "@mui/material";
+import { Button, TextField, CircularProgress, Snackbar, Alert } from "@mui/material";
+import axios from "axios";
 
 const Profile = () => {
-  // Dữ liệu giả cho profile
-  const [profile, setProfile] = useState({
-    avatar: viettel, // Dùng ảnh mặc định
-    fullName: "Alexa Rawles",
-    email: "alexarawles@gmail.com",
+  // Dữ liệu mặc định cho profile
+  const defaultProfile = {
+    avatar: viettel,
+    name: "",
+    email: "",
     address: "",
+    phone: "",
     major: "",
-    school: "",
-    jobTypeDesired: "",
-    jobPositionDesired: "",
-    availability: {
-      "Thứ hai": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
-      "Thứ ba": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
-      "Thứ tư": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
-      "Thứ năm": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
-      "Thứ sáu": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
-      "Thứ bảy": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
-      "Chủ nhật": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
-    }
+    university: "",
+    jobType: "",
+    jobForm: "",
+    category: "",
+    workingSchedule: []
+  };
+
+  // State cho profile
+  const [profile, setProfile] = useState(defaultProfile);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "success"
   });
 
+  // State cho các tùy chọn dropdown
+  const [categoryOptions, setCategoryOptions] = useState([]);
+
+  
   // State cho dropdown
   const [dropdowns, setDropdowns] = useState({
     major: false,
-    school: false,
+    university: false,
     jobType: false,
-    jobPosition: false
+    jobForm: false,
+    category: false
   });
 
-  // Danh sách lựa chọn cho các dropdown
+  // Danh sách lựa chọn cố định cho các dropdown
   const options = {
     major: ["Công nghệ thông tin", "Kinh tế", "Ngoại ngữ", "Sư phạm", "Y khoa"],
-    school: ["Đại học Bách Khoa", "Đại học Kinh tế", "Đại học Ngoại thương", "Đại học Quốc gia"],
-    jobType: ["Part-time", "Full-time", "Freelancer", "Internship"],
-    jobPosition: ["Gia sư", "Nhân viên bán hàng", "Design", "Sales", "IT"]
+    university: ["Đại học Bách Khoa", "Đại học Kinh tế", "Đại học Ngoại thương", "Đại học Quốc gia"],
+    jobType: ["Part-time", "Full-time", "Freelancer"],
+    jobForm: ["Internship", "Contract", "Làm thêm"]
   };
+  
+  // ID người dùng cố định - trong thực tế sẽ lấy từ authentication
+  const userId = "682b71380c69774bd1f056bd";
+
+  // Fetch dữ liệu profile từ API khi component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setLoading(true);
+      try {
+        // Lấy thông tin người dùng
+        const userResponse = await axios.get(`http://localhost:8080/api/v1/users/${userId}`);
+        
+        if (userResponse.data) {
+          // Chuyển đổi dữ liệu schedule từ API sang định dạng availability
+          const availability = {
+            "Thứ 2": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
+            "Thứ 3": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
+            "Thứ 4": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
+            "Thứ 5": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
+            "Thứ 6": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
+            "Thứ 7": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
+            "Chủ nhật": { "Ca sáng": false, "Ca chiều": false, "Ca tối": false },
+          };
+          
+          // Nếu có lịch làm việc, cập nhật vào availability
+          if (userResponse.data.workingSchedule && userResponse.data.workingSchedule.length > 0) {
+            userResponse.data.workingSchedule.forEach(schedule => {
+              // Chuyển đổi "sáng", "chiều", "tối" thành "Ca sáng", "Ca chiều", "Ca tối"
+              const periodKey = `Ca ${schedule.period}`;
+              if (availability[schedule.day]) {
+                availability[schedule.day][periodKey] = true;
+              }
+            });
+          }
+          
+          // Gán dữ liệu vào state
+          setProfile({
+            ...defaultProfile,
+            ...userResponse.data,
+            availability: availability
+          });
+        }
+        
+        // Lấy danh sách danh mục công việc
+        const categoryResponse = await axios.get(`http://localhost:8080/api/v1/users/${userId}/get-category-list`);
+        if (categoryResponse.data) {
+          setCategoryOptions(categoryResponse.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+        setNotification({
+          open: true,
+          message: "Không thể tải thông tin người dùng. Vui lòng thử lại sau.",
+          severity: "error"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUserData();
+  }, [userId]);
 
   // Xử lý khi thay đổi giá trị input
   const handleInputChange = (field, value) => {
@@ -62,7 +134,7 @@ const Profile = () => {
     // Đóng dropdown sau khi chọn
     setDropdowns({
       ...dropdowns,
-      [field === "jobTypeDesired" ? "jobType" : field === "jobPositionDesired" ? "jobPosition" : field]: false
+      [field]: false
     });
   };
 
@@ -86,11 +158,81 @@ const Profile = () => {
   };
 
   // Xử lý cập nhật profile
-  const handleUpdateProfile = () => {
-    // Giả lập gửi dữ liệu lên server
-    console.log("Cập nhật profile:", profile);
-    alert("Cập nhật thông tin thành công!");
+  const handleUpdateProfile = async () => {
+    setSaving(true);
+    
+    try {
+      // Chuyển đổi availability thành workingSchedule
+      const workingSchedule = [];
+      
+      Object.entries(profile.availability || {}).forEach(([day, periods]) => {
+        Object.entries(periods).forEach(([period, isAvailable]) => {
+          if (isAvailable) {
+            // Chuyển đổi "Ca sáng" thành "sáng"
+            const periodValue = period.replace("Ca ", "");
+            workingSchedule.push({
+              day: day,
+              period: periodValue
+            });
+          }
+        });
+      });
+      
+      // Chuẩn bị dữ liệu gửi lên server
+      const userData = {
+        name: profile.name,
+        email: profile.email,
+        address: profile.address,
+        phone: profile.phone,
+        jobType: profile.jobType,
+        jobForm: profile.jobForm,
+        university: profile.university,
+        major: profile.major,
+        category: profile.category,
+        workingSchedule: workingSchedule
+      };
+      
+      // Gửi dữ liệu lên server
+      const response = await axios.post(`http://localhost:8080/api/v1/users/${userId}`, userData);
+      
+      if (response.status === 200) {
+        setNotification({
+          open: true,
+          message: "Cập nhật thông tin thành công!",
+          severity: "success"
+        });
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật thông tin:", error);
+      setNotification({
+        open: true,
+        message: "Không thể cập nhật thông tin. Vui lòng thử lại sau.",
+        severity: "error"
+      });
+    } finally {
+      setSaving(false);
+    }
   };
+
+  // Xử lý đóng notification
+  const handleCloseNotification = () => {
+    setNotification({
+      ...notification,
+      open: false
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="profile-page">
+        <Header />
+        <div className="profile-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
+          <CircularProgress style={{ color: '#6300b3' }} />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="profile-page">
@@ -108,7 +250,7 @@ const Profile = () => {
                 className="profile-avatar" 
               />
               <div className="profile-info">
-                <h2 className="profile-name">{profile.fullName}</h2>
+                <h2 className="profile-name">{profile.name}</h2>
                 <p className="profile-email">{profile.email}</p>
               </div>
             </div>
@@ -117,8 +259,9 @@ const Profile = () => {
               variant="contained"
               className="update-btn"
               onClick={handleUpdateProfile}
+              disabled={saving}
             >
-              Cập nhật
+              {saving ? <CircularProgress size={24} style={{ color: 'white' }} /> : "Cập nhật"}
             </Button>
           </div>
           
@@ -129,21 +272,47 @@ const Profile = () => {
                 <TextField
                   fullWidth
                   variant="outlined"
-                  value={profile.fullName}
-                  onChange={(e) => handleInputChange("fullName", e.target.value)}
+                  value={profile.name || ""}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
                   className="profile-input"
                 />
               </div>
               
               <div className="form-group">
+                <label>Email</label>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  value={profile.email || ""}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  className="profile-input"
+                  type="email"
+                />
+              </div>
+            </div>
+            
+            <div className="form-row">
+              <div className="form-group">
                 <label>Địa chỉ</label>
                 <TextField
                   fullWidth
                   variant="outlined"
-                  value={profile.address}
+                  value={profile.address || ""}
                   onChange={(e) => handleInputChange("address", e.target.value)}
                   className="profile-input"
                   placeholder="Nhập địa chỉ của bạn"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Số điện thoại</label>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  value={profile.phone || ""}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  className="profile-input"
+                  placeholder="Nhập số điện thoại của bạn"
                 />
               </div>
             </div>
@@ -181,19 +350,19 @@ const Profile = () => {
                 <div className="custom-dropdown">
                   <div 
                     className="dropdown-selection"
-                    onClick={() => toggleDropdown("school")}
+                    onClick={() => toggleDropdown("university")}
                   >
-                    {profile.school || "Chọn trường học"}
-                    <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.school ? "rotated" : ""}`} />
+                    {profile.university || "Chọn trường học"}
+                    <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.university ? "rotated" : ""}`} />
                   </div>
                   
-                  {dropdowns.school && (
+                  {dropdowns.university && (
                     <div className="dropdown-options">
-                      {options.school.map((option, index) => (
+                      {options.university.map((option, index) => (
                         <div 
                           key={index} 
                           className="dropdown-option"
-                          onClick={() => handleSelectOption("school", option)}
+                          onClick={() => handleSelectOption("university", option)}
                         >
                           {option}
                         </div>
@@ -212,7 +381,7 @@ const Profile = () => {
                     className="dropdown-selection"
                     onClick={() => toggleDropdown("jobType")}
                   >
-                    {profile.jobTypeDesired || "Chọn loại công việc"}
+                    {profile.jobType || "Chọn loại công việc"}
                     <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.jobType ? "rotated" : ""}`} />
                   </div>
                   
@@ -222,7 +391,7 @@ const Profile = () => {
                         <div 
                           key={index} 
                           className="dropdown-option"
-                          onClick={() => handleSelectOption("jobTypeDesired", option)}
+                          onClick={() => handleSelectOption("jobType", option)}
                         >
                           {option}
                         </div>
@@ -233,23 +402,23 @@ const Profile = () => {
               </div>
               
               <div className="form-group">
-                <label>Vị trí làm việc mong muốn</label>
+                <label>Hình thức công việc mong muốn</label>
                 <div className="custom-dropdown">
                   <div 
                     className="dropdown-selection"
-                    onClick={() => toggleDropdown("jobPosition")}
+                    onClick={() => toggleDropdown("jobForm")}
                   >
-                    {profile.jobPositionDesired || "Chọn vị trí làm việc"}
-                    <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.jobPosition ? "rotated" : ""}`} />
+                    {profile.jobForm || "Chọn hình thức công việc"}
+                    <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.jobForm ? "rotated" : ""}`} />
                   </div>
                   
-                  {dropdowns.jobPosition && (
+                  {dropdowns.jobForm && (
                     <div className="dropdown-options">
-                      {options.jobPosition.map((option, index) => (
+                      {options.jobForm.map((option, index) => (
                         <div 
                           key={index} 
                           className="dropdown-option"
-                          onClick={() => handleSelectOption("jobPositionDesired", option)}
+                          onClick={() => handleSelectOption("jobForm", option)}
                         >
                           {option}
                         </div>
@@ -260,7 +429,37 @@ const Profile = () => {
               </div>
             </div>
             
-            {profile.jobTypeDesired === "Part-time" && (
+            <div className="form-row">
+              <div className="form-group">
+                <label>Vị trí công việc mong muốn</label>
+                <div className="custom-dropdown">
+                  <div 
+                    className="dropdown-selection"
+                    onClick={() => toggleDropdown("category")}
+                  >
+                    {profile.category || "Chọn vị trí công việc"}
+                    <KeyboardArrowDownIcon className={`dropdown-icon ${dropdowns.category ? "rotated" : ""}`} />
+                  </div>
+                  
+                  {dropdowns.category && (
+                    <div className="dropdown-options">
+                      {categoryOptions.map((option, index) => (
+                        <div 
+                          key={index} 
+                          className="dropdown-option"
+                          onClick={() => handleSelectOption("category", option)}
+                        >
+                          {option}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Hiển thị bảng thời gian có sẵn nếu là Part-time */}
+            {profile.jobType === "Part-time" && (
               <div className="schedule-section">
                 <h3 className="schedule-title">Thời gian làm việc</h3>
                 
@@ -272,7 +471,7 @@ const Profile = () => {
                     <div className="schedule-period">Ca tối</div>
                   </div>
                   
-                  {Object.entries(profile.availability).map(([day, periods]) => (
+                  {Object.entries(profile.availability || {}).map(([day, periods]) => (
                     <div className="schedule-row" key={day}>
                       <div className="schedule-day">{day}</div>
                       {Object.entries(periods).map(([period, isAvailable]) => (
@@ -293,6 +492,21 @@ const Profile = () => {
           </div>
         </div>
       </div>
+      
+      <Snackbar 
+        open={notification.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseNotification}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseNotification} 
+          severity={notification.severity}
+          sx={{ width: '100%' }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
       
       <Footer />
     </div>
