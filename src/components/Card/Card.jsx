@@ -8,7 +8,7 @@ import companyLogo from "../../assets/company-logo.png";
 
 const JOB = {
   id: 1,
-  name: "Dạy thêm tiếng Anh lớp 8 ",
+  title: "Dạy thêm tiếng Anh lớp 8",
   jobType: "Part-time",
   category: "Gia sư",
   company: {
@@ -26,17 +26,31 @@ const formatPrice = (amount) => {
   return `${Number(amount).toLocaleString("vi-VN")} đ/buổi`;
 };
 
-const Card = ({ job = JOB }) => {
+const Card = ({ job = {} }) => {
   const navigate = useNavigate();
+  console.log(job);
 
   const handleViewDetail = () => {
-    navigate(`/jobs/${job.id}`);
+    if (job._id) navigate(`/jobs/${job._id}`);
+  };
+
+  const calculateDateDifference = (startDateStr, endDateStr) => {
+    const startDate = new Date(startDateStr);
+    const endDate = new Date(endDateStr);
+
+    // Tính số mili giây giữa 2 ngày
+    const diffInMs = endDate - startDate;
+
+    // Đổi sang số ngày
+    const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+
+    return diffInDays;
   };
 
   return (
     <div className="card">
       <div className="card-name">
-        <span>{job.name}</span>
+        <span>{job.title}</span>
         <BookmarkBorderIcon />
       </div>
 
@@ -47,11 +61,21 @@ const Card = ({ job = JOB }) => {
 
       <div className="company">
         <div className="avatar">
-          <img src={job.avatar ?? companyLogo} alt="company-logo" />
+          <img src={job.company?.avatar ?? companyLogo} alt="company-logo" />
         </div>
         <div className="company-info">
-          <div className="company-name">{job.company.name}</div>
-          <div className="company-location">{job.company.location}</div>
+          <div
+            className="company-name"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 1,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {job.company?.name}
+          </div>
+          <div className="company-location">{job.company?.location}</div>
         </div>
       </div>
 
@@ -78,7 +102,9 @@ const Card = ({ job = JOB }) => {
         </div>
         <div className="job-salary">
           <div className="salary-vnd">{formatPrice(job.salary)}</div>
-          <div className="deadline">Còn {job.deadline} ngày</div>
+          <div className="deadline">
+            Còn {calculateDateDifference(job.startDate, job.endDate)} ngày
+          </div>
         </div>
       </div>
 

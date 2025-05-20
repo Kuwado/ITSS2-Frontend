@@ -8,12 +8,13 @@ import vnpt from "../../assets/vnpt.png";
 import ibm from "../../assets/ibm.png";
 
 import SearchBar from "../../components/SearchBar/SearchBar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "../../components/Card/Card";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer/Footer";
+import axios from "axios";
 
 const responsive = {
   desktop: {
@@ -41,14 +42,36 @@ const responsive = {
 const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [newestJobs, setNewestJobs] = useState([1, 2, 3, 4]);
+  const [newestJobs, setNewestJobs] = useState([]);
   const [forYoujobs, setForYouJobs] = useState([1, 2, 3, 4]);
+
+  console.log(newestJobs);
 
   const handleViewNewestJobs = () => {
     const searchParams = new URLSearchParams(location.search);
     searchParams.set("sort", "newest");
     navigate(`/jobs?${searchParams.toString()}`);
   };
+
+  const fetchNewestJobs = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:8080/api/v1/jobs?sortKey=startDate&sortValue=asc&limit=10"
+      );
+      console.log(res);
+      setNewestJobs(res.data.data);
+    } catch (err) {
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "Đã có lỗi xảy ra. Vui lòng thử lại";
+      console.log(errorMessage);
+    }
+  };
+
+  useEffect(() => {
+    fetchNewestJobs();
+  }, []);
 
   return (
     <div className="home-page">
@@ -88,7 +111,7 @@ const Home = () => {
             >
               {newestJobs.length > 0 &&
                 newestJobs.map((job, index) => (
-                  <Card key={`newest-job-${index}`} />
+                  <Card key={`newest-job-${index}`} job={job} />
                 ))}
             </Carousel>
           </div>
