@@ -12,6 +12,9 @@ import companyLogo from "../../assets/company-logo.png";
 import PushPin from "../../assets/pushpin.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import WorkIcon from "@mui/icons-material/Work";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import Schedule from "@mui/icons-material/WorkOutline";
 import "./JobDetail.css";
 import Header from "../../components/Header";
 
@@ -50,9 +53,6 @@ const JobDetail = () => {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
     });
   };
 
@@ -82,6 +82,12 @@ const JobDetail = () => {
                 <li>
                   <MonetizationOnIcon /> {formatPrice(job.salary)}/
                   {job.salaryUnit}
+                </li>
+                <li>
+                  <WorkIcon
+                    style={{ verticalAlign: "middle", marginRight: 4 }}
+                  />
+                  {job.jobForm}
                 </li>
                 <li>
                   <WorkHistoryIcon />{" "}
@@ -123,12 +129,19 @@ const JobDetail = () => {
                   </>
                 ) : (
                   <li>
-                    <AccessTimeIcon /> {job.workingTime}</li>
+                    <AccessTimeIcon /> {job.workingTime}
+                  </li>
                 )}
 
                 <li>
-                  <CalendarTodayIcon /> {formatDateTime(job.startDate)} –{" "}
+                  <AssignmentIcon /> Ứng tuyển:
+                  {formatDateTime(job.startDate)} –{" "}
                   {formatDateTime(job.endDate)}
+                </li>
+                <li>
+                  <Schedule /> Làm chính thức:
+                  {formatDateTime(job.recruitStartDate)} –{" "}
+                  {formatDateTime(job.recruitEndDate)}
                 </li>
               </ul>
             </div>
@@ -166,9 +179,17 @@ const JobDetail = () => {
           <h2>Mô tả chi tiết công việc</h2>
           <div className="job-description">
             <ul>
-              {job.description.split("\n").map((line, index) => (
-                <p key={index}>{line}</p>
-              ))}
+              {job.description.split(".").map(
+                (line, index) =>
+                  line.trim() && (
+                    <p
+                      key={index}
+                      style={{ fontSize: "16px", lineHeight: "1.6" }}
+                    >
+                      • {line.trim()}.
+                    </p>
+                  )
+              )}
             </ul>
           </div>
         </div>
