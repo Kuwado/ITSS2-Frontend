@@ -60,7 +60,7 @@ const Card = ({ job = {} }) => {
 
       <div className="company">
         <div className="avatar">
-          <img src={job.company?.avatar ?? companyLogo} alt="company-logo" />
+          <img src={job.company?.logo ?? companyLogo} alt="company-logo" />
         </div>
         <div className="company-info">
           <div
