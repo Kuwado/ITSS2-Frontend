@@ -195,11 +195,11 @@ const JobList = () => {
 
   // Chuyển đổi dữ liệu từ API sang cấu trúc cho Card component
   const formatJobForCard = (job) => {
-    if (!job) return null;
+    if (!job) return {};
     
     return {
-      id: job._id || "",
-      name: job.title || "Không có tiêu đề",
+      _id: job._id || "",
+      title: job.title || "Không có tiêu đề",
       jobType: job.jobType || "Không xác định",
       category: job.category || "Không xác định",
       company: {
@@ -210,7 +210,8 @@ const JobList = () => {
       address: job.address || "Không có địa chỉ",
       salary: job.salary || 0,
       salaryUnit: job.salaryUnit || "buổi",
-      deadline: calculateRemainingDays(job.endDate),
+      startDate: job.startDate || new Date(),
+      endDate: job.endDate || new Date(),
     };
   };
   
