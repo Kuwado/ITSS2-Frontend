@@ -113,7 +113,8 @@ const Home = () => {
     }
     const params = new URLSearchParams();
 
-    if (workingSchedule) params.append("available", workingSchedule);
+    if (user.jobType === "Part-Time" && workingSchedule)
+      params.append("available", workingSchedule);
     if (user.jobType) params.append("jobType", user.jobType);
     if (user.jobForm) params.append("jobForm", user.jobForm);
     if (user.category) params.append("category", user.category);
