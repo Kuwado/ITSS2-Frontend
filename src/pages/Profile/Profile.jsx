@@ -260,34 +260,36 @@ const Profile = () => {
               </div>
             </div>
             
-            <div className="schedule-section">
-              <h3 className="schedule-title">Thời gian làm việc</h3>
-              
-              <div className="schedule-table">
-                <div className="schedule-header">
-                  <div className="schedule-day"></div>
-                  <div className="schedule-period">Ca sáng</div>
-                  <div className="schedule-period">Ca chiều</div>
-                  <div className="schedule-period">Ca tối</div>
-                </div>
+            {profile.jobTypeDesired === "Part-time" && (
+              <div className="schedule-section">
+                <h3 className="schedule-title">Thời gian làm việc</h3>
                 
-                {Object.entries(profile.availability).map(([day, periods]) => (
-                  <div className="schedule-row" key={day}>
-                    <div className="schedule-day">{day}</div>
-                    {Object.entries(periods).map(([period, isAvailable]) => (
-                      <div className="schedule-period-cell" key={period}>
-                        <input 
-                          type="checkbox"
-                          checked={isAvailable}
-                          onChange={() => handleAvailabilityChange(day, period)}
-                          className="schedule-checkbox"
-                        />
-                      </div>
-                    ))}
+                <div className="schedule-table">
+                  <div className="schedule-header">
+                    <div className="schedule-day"></div>
+                    <div className="schedule-period">Ca sáng</div>
+                    <div className="schedule-period">Ca chiều</div>
+                    <div className="schedule-period">Ca tối</div>
                   </div>
-                ))}
+                  
+                  {Object.entries(profile.availability).map(([day, periods]) => (
+                    <div className="schedule-row" key={day}>
+                      <div className="schedule-day">{day}</div>
+                      {Object.entries(periods).map(([period, isAvailable]) => (
+                        <div className="schedule-period-cell" key={period}>
+                          <input 
+                            type="checkbox"
+                            checked={isAvailable}
+                            onChange={() => handleAvailabilityChange(day, period)}
+                            className="schedule-checkbox"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
