@@ -21,6 +21,9 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
     maxSalary: initialFilters.maxSalary || "",
     available: initialFilters.available || []
   });
+
+  // State cho theo dõi trạng thái thu gọn/mở rộng
+  const [isCollapsed, setIsCollapsed] = useState(false);
   
   // State cho dữ liệu từ API
   const [categories, setCategories] = useState([]);
@@ -31,7 +34,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
   useEffect(() => {
     const fetchFilterData = async () => {
       try {
-        // Tạm thời sử dụng mẫu vì không có API lấy danh sách loại công việc
+        // Tạm thời sử dụng mẫu cho job types và job forms
         setJobTypes([
           { name: "Freelancer" },
           { name: "Full-Time" },
@@ -45,6 +48,16 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
           { name: "Làm thêm" }
         ]);
         
+        // Sử dụng API mới để lấy danh sách category
+        const response = await axios.get("http://localhost:8080/api/v1/users/682b71380c69774bd1f056bd/get-category-list");
+        if (response.data) {
+          // Thêm "Tất cả" vào danh sách category
+          const categoriesWithAll = [{ name: "Tất cả" }, ...response.data.map(cat => ({ name: cat }))];
+          setCategories(categoriesWithAll);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu bộ lọc:", error);
+        // Fallback nếu API bị lỗi
         setCategories([
           { name: "Tất cả" },
           { name: "Nhân viên bán hàng" },
@@ -52,10 +65,6 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
           { name: "Design" },
           { name: "Sales" }
         ]);
-        
-        
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu bộ lọc:", error);
       }
     };
     
@@ -69,6 +78,19 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
       [section]: !expanded[section]
     });
   };
+
+  // Xử lý khi nhấn nút thu hẹp/mở rộng
+  const toggleAllSections = () => {
+    const newExpandedState = !isCollapsed;
+    setIsCollapsed(newExpandedState);
+    
+    // Đặt tất cả các section thành cùng giá trị (true nếu mở rộng, false nếu thu gọn)
+    setExpanded({
+      jobType: !newExpandedState,
+      workTime: !newExpandedState,
+      jobPosition: !newExpandedState
+    });
+  };
   
   // Xử lý khi thay đổi loại công việc
   const handleJobTypeChange = (type) => {
@@ -80,14 +102,12 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
       
       // Nếu loại bỏ Part-Time, cũng xóa tất cả các ngày đã chọn
       if (type === "Part-Time") {
-        const newFilters = { 
+        setFilters({ 
           ...filters, 
           jobType: newJobTypes,
           days: [],
           available: []
-        };
-        setFilters(newFilters);
-        onFilterChange(newFilters);
+        });
         return;
       }
     } else {
@@ -95,9 +115,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
       newJobTypes.push(type);
     }
     
-    const newFilters = { ...filters, jobType: newJobTypes };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
+    setFilters({ ...filters, jobType: newJobTypes });
   };
   
   // Xử lý khi thay đổi vị trí công việc (category)
@@ -125,9 +143,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
       }
     }
     
-    const newFilters = { ...filters, category: newCategories };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
+    setFilters({ ...filters, category: newCategories });
   };
   
   // Xử lý khi thay đổi hình thức công việc (jobForm)
@@ -155,9 +171,7 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
       }
     }
     
-    const newFilters = { ...filters, jobForm: newJobForms };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
+    setFilters({ ...filters, jobForm: newJobForms });
   };
   
   // Xử lý khi thay đổi ngày làm việc
@@ -172,20 +186,15 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
       let newSchedule = [...(filters.available || [])];
       newSchedule = newSchedule.filter(item => !item.startsWith(`${day}-`));
       
-      const newFilters = { 
+      setFilters({ 
         ...filters, 
         days: newDays,
         available: newSchedule 
-      };
-      setFilters(newFilters);
-      onFilterChange(newFilters);
+      });
     } else {
       // Thêm ngày
       newDays.push(day);
-      
-      const newFilters = { ...filters, days: newDays };
-      setFilters(newFilters);
-      onFilterChange(newFilters);
+      setFilters({ ...filters, days: newDays });
     }
   };
   
@@ -200,18 +209,15 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
       newSchedule.push(scheduleItem);
     }
     
-    const newFilters = { ...filters, available: newSchedule };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
+    setFilters({ ...filters, available: newSchedule });
   };
   
   // Xử lý khi thay đổi mức lương
   const handleSalaryChange = (type, value) => {
-    const newFilters = { 
+    setFilters({ 
       ...filters, 
       [type]: value 
-    };
-    setFilters(newFilters);
+    });
   };
   
   // Xử lý khi nhấn nút Lọc
@@ -395,7 +401,9 @@ const JobFilter = ({ onFilterChange, initialFilters = {} }) => {
         
         <div className="section-divider"></div>
         
-        <button className="collapse-button">Thu hẹp</button>
+        <button className="collapse-button" onClick={toggleAllSections}>
+          {isCollapsed ? "Mở rộng" : "Thu hẹp"}
+        </button>
       </div>
       
       <button className="filter-btn" onClick={handleFilter}>Lọc</button>
