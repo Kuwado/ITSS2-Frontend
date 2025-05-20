@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 import "./SearchBar.css";
 import {
@@ -16,8 +17,11 @@ import SearchIcon from "@mui/icons-material/Search";
 const SearchBar = ({ gray = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [addresses, setAddresses] = useState([]);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
+
+  console.log(addresses);
 
   const handleChange = (event) => {
     setAddress(event.target.value);
@@ -26,13 +30,33 @@ const SearchBar = ({ gray = false }) => {
   const handleSearch = () => {
     const searchParams = new URLSearchParams(location.search);
     if (name) {
-      searchParams.set("name", name);
+      searchParams.set("keyword", name);
     }
     if (address) {
       searchParams.set("address", address);
     }
-    navigate(`/jobs?${searchParams.toString()}`);
+    navigate(
+      `/jobs?${searchParams.toString()}&sortKey=startDate&sortValue=desc`
+    );
   };
+
+  const fetchAddresses = async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/api/v1/address");
+      console.log(res);
+      setAddresses(res.data.address);
+    } catch (err) {
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "Đã có lỗi xảy ra. Vui lòng thử lại";
+      console.log(errorMessage);
+    }
+  };
+
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
 
   return (
     <div className={gray ? "search-bar gray" : "search-bar"}>
@@ -66,9 +90,12 @@ const SearchBar = ({ gray = false }) => {
             onChange={handleChange}
             label="Chọn tùy chọn"
           >
-            <MenuItem value={10}>Tùy chọn 1</MenuItem>
-            <MenuItem value={20}>Tùy chọn 2</MenuItem>
-            <MenuItem value={30}>Tùy chọn 3</MenuItem>
+            {addresses.length > 0 &&
+              addresses.map((adr, index) => (
+                <MenuItem key={`address-select-${index}`} value={adr}>
+                  {adr}
+                </MenuItem>
+              ))}
           </Select>
         </FormControl>
       </div>

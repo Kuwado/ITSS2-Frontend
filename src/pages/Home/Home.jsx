@@ -43,23 +43,84 @@ const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [newestJobs, setNewestJobs] = useState([]);
-  const [forYoujobs, setForYouJobs] = useState([1, 2, 3, 4]);
-
-  console.log(newestJobs);
+  const [forYoujobs, setForYouJobs] = useState([]);
+  const [user, setUser] = useState({});
 
   const handleViewNewestJobs = () => {
-    const searchParams = new URLSearchParams(location.search);
-    searchParams.set("sort", "newest");
-    navigate(`/jobs?${searchParams.toString()}`);
+    navigate(`jobs?sortKey=startDate&sortValue=desc`);
+  };
+
+  const handleViewForYouJobs = () => {
+    let workingSchedule = "";
+    let days = "";
+    if (user.workingSchedule.length > 0) {
+      workingSchedule = user.workingSchedule
+        .map((ws) => `${ws.day}-${ws.period}`)
+        .join(",");
+
+      days = user.workingSchedule.map((ws) => ws.day).join(",");
+    }
+
+    const params = new URLSearchParams();
+
+    if (workingSchedule) params.append("available", workingSchedule);
+    if (days) params.append("days", days);
+    if (user.jobType) params.append("jobType", user.jobType);
+    if (user.jobForm) params.append("jobForm", user.jobForm);
+    if (user.category) params.append("category", user.category);
+
+    const query = params.toString();
+    navigate(`/jobs?${query}&sortKey=startDate&sortValue=desc`);
   };
 
   const fetchNewestJobs = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/v1/jobs?sortKey=startDate&sortValue=asc&limit=10"
+        "http://localhost:8080/api/v1/jobs?sortKey=startDate&sortValue=desc&limit=10&page=1"
       );
-      console.log(res);
       setNewestJobs(res.data.data);
+    } catch (err) {
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "Đã có lỗi xảy ra. Vui lòng thử lại";
+      console.log(errorMessage);
+    }
+  };
+
+  const fetchUser = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:8080/api/v1/users/682b71380c69774bd1f056bd"
+      );
+      setUser(res.data);
+    } catch (err) {
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "Đã có lỗi xảy ra. Vui lòng thử lại";
+      console.log(errorMessage);
+    }
+  };
+
+  const fetchForYouJobs = async () => {
+    let workingSchedule = "";
+    if (user.workingSchedule.length > 0) {
+      workingSchedule = user.workingSchedule
+        .map((ws) => `${ws.day}-${ws.period}`)
+        .join(",");
+    }
+    const params = new URLSearchParams();
+
+    if (workingSchedule) params.append("available", workingSchedule);
+    if (user.jobType) params.append("jobType", user.jobType);
+    if (user.jobForm) params.append("jobForm", user.jobForm);
+    if (user.category) params.append("category", user.category);
+
+    const query = params.toString();
+    try {
+      const res = await axios.get(`http://localhost:8080/api/v1/jobs?${query}`);
+      setForYouJobs(res.data.data);
     } catch (err) {
       const errorMessage =
         err.response && err.response.data && err.response.data.message
@@ -71,7 +132,12 @@ const Home = () => {
 
   useEffect(() => {
     fetchNewestJobs();
+    fetchUser();
   }, []);
+
+  useEffect(() => {
+    if (user._id) fetchForYouJobs();
+  }, [user]);
 
   return (
     <div className="home-page">
@@ -138,12 +204,12 @@ const Home = () => {
             >
               {forYoujobs.length > 0 &&
                 forYoujobs.map((job, index) => (
-                  <Card key={`for-u-job-${index}`} />
+                  <Card key={`for-u-job-${index}`} job={job} />
                 ))}
             </Carousel>
           </div>
 
-          <div className="view-all-btn" onClick={handleViewNewestJobs}>
+          <div className="view-all-btn" onClick={handleViewForYouJobs}>
             Xem tất cả
           </div>
         </div>
