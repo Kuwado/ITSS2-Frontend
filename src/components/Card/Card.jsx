@@ -28,7 +28,6 @@ const formatPrice = (amount) => {
 
 const Card = ({ job = {} }) => {
   const navigate = useNavigate();
-  console.log(job);
 
   const handleViewDetail = () => {
     if (job._id) navigate(`/jobs/${job._id}`);
