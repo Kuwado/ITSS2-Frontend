@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./JobList.css";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer/Footer";
@@ -13,13 +13,25 @@ import { TextField, Select, MenuItem, FormControl, Button } from "@mui/material"
 import axios from "axios";
 
 const JobList = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
+  const initialLoad = useRef(true);
   
   // State cho form tìm kiếm
-  const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
-  const [address, setAddress] = useState(searchParams.get("address") || "");
+  const [searchForm, setSearchForm] = useState({
+    keyword: searchParams.get("keyword") || "",
+    address: searchParams.get("address") || ""
+  });
+  
+  // State cho tìm kiếm đã áp dụng
+  const [appliedSearch, setAppliedSearch] = useState({
+    keyword: searchParams.get("keyword") || "",
+    address: searchParams.get("address") || ""
+  });
   
   // State cho danh sách công việc và phân trang
   const [jobs, setJobs] = useState([]);
@@ -87,9 +99,9 @@ const JobList = () => {
         // Xây dựng query parameters từ state
         const params = new URLSearchParams();
         
-        // Tham số tìm kiếm
-        if (keyword) params.append("keyword", keyword);
-        if (address) params.append("address", address);
+        // Tham số tìm kiếm (sử dụng appliedSearch để chỉ áp dụng khi nhấn nút tìm kiếm)
+        if (appliedSearch.keyword) params.append("keyword", appliedSearch.keyword);
+        if (appliedSearch.address) params.append("address", appliedSearch.address);
         
         // Tham số phân trang
         params.append("page", currentPage);
@@ -132,6 +144,17 @@ const JobList = () => {
         setJobs([]); // Đảm bảo jobs là một mảng rỗng khi có lỗi
       } finally {
         setIsLoading(false);
+        
+        // Cuộn lên đầu trang sau khi tải dữ liệu xong
+        // Bỏ qua lần đầu tiên tải trang
+        if (!initialLoad.current) {
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+        } else {
+          initialLoad.current = false;
+        }
       }
     };
     
@@ -139,8 +162,8 @@ const JobList = () => {
     
     // Cập nhật URL với searchParams mới
     const newSearchParams = new URLSearchParams();
-    if (keyword) newSearchParams.set("keyword", keyword);
-    if (address) newSearchParams.set("address", address);
+    if (appliedSearch.keyword) newSearchParams.set("keyword", appliedSearch.keyword);
+    if (appliedSearch.address) newSearchParams.set("address", appliedSearch.address);
     if (currentPage > 1) newSearchParams.set("page", currentPage.toString());
     
     // Thêm các tham số lọc vào URL - Kiểm tra null/undefined trước khi truy cập .length
@@ -162,16 +185,24 @@ const JobList = () => {
     
     // Cập nhật URL không làm mới trang
     navigate(`/jobs?${newSearchParams.toString()}`, { replace: true });
-  }, [currentPage, keyword, address, filters, sortOption, navigate]);
+  }, [currentPage, appliedSearch, filters, sortOption, navigate]);
   
   // Xử lý khi chuyển trang
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
-    window.scrollTo(0, 0);
+  };
+  
+  // Xử lý khi thay đổi giá trị trong form tìm kiếm
+  const handleSearchFormChange = (field, value) => {
+    setSearchForm({
+      ...searchForm,
+      [field]: value
+    });
   };
   
   // Xử lý khi submit form tìm kiếm
   const handleSearch = () => {
+    setAppliedSearch(searchForm);
     setCurrentPage(1); // Reset về trang 1 khi tìm kiếm mới
   };
   
@@ -197,6 +228,9 @@ const JobList = () => {
   const formatJobForCard = (job) => {
     if (!job) return {};
     
+    // Tính số ngày còn lại cho deadline
+    const deadline = calculateRemainingDays(job.endDate);
+    
     return {
       _id: job._id || "",
       title: job.title || "Không có tiêu đề",
@@ -212,6 +246,7 @@ const JobList = () => {
       salaryUnit: job.salaryUnit || "buổi",
       startDate: job.startDate || new Date(),
       endDate: job.endDate || new Date(),
+      deadline: deadline,
     };
   };
   
@@ -242,8 +277,8 @@ const JobList = () => {
                 fullWidth
                 placeholder="Tên công việc"
                 variant="outlined"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
+                value={searchForm.keyword}
+                onChange={(e) => handleSearchFormChange("keyword", e.target.value)}
                 InputProps={{
                   startAdornment: (
                     <SearchIcon style={{ color: "#6300b3", marginRight: "8px" }} />
@@ -255,8 +290,8 @@ const JobList = () => {
             <div className="search-address">
               <FormControl fullWidth>
                 <Select
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  value={searchForm.address}
+                  onChange={(e) => handleSearchFormChange("address", e.target.value)}
                   displayEmpty
                   inputProps={{ 'aria-label': 'Địa điểm' }}
                   startAdornment={<LocationOnIcon style={{ color: "#6300b3", marginRight: "8px" }} />}
