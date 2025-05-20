@@ -237,7 +237,7 @@ const JobList = () => {
       jobType: job.jobType || "Không xác định",
       category: job.category || "Không xác định",
       company: {
-        avatar: job.company?.logo || null,
+        logo: job.company?.logo || null,
         name: job.company?.name || "Không có tên công ty",
         location: job.company?.location || "Không xác định",
       },
