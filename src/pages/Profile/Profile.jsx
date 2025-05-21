@@ -50,7 +50,7 @@ const Profile = () => {
   const options = {
     major: ["Công nghệ thông tin", "Kinh tế", "Ngoại ngữ", "Sư phạm", "Y khoa"],
     university: ["Đại học Bách Khoa", "Đại học Kinh tế", "Đại học Ngoại thương", "Đại học Quốc gia"],
-    jobType: ["Part-time", "Full-time", "Freelancer"],
+    jobType: ["Part-Time", "Full-Time", "Freelancer"],
     jobForm: ["Internship", "Contract", "Làm thêm"]
   };
   
@@ -459,7 +459,7 @@ const Profile = () => {
             </div>
             
             {/* Hiển thị bảng thời gian có sẵn nếu là Part-time */}
-            {profile.jobType === "Part-time" && (
+            {profile.jobType === "Part-Time" && (
               <div className="schedule-section">
                 <h3 className="schedule-title">Thời gian làm việc</h3>
                 
